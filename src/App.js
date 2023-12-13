@@ -1,3 +1,4 @@
+// ! COURS LINKEDIN LEARNING
 // Ici j'importe les éléments dont j'ai besoin
 import logo from './logo.svg';
 import logoPink from './logo-pink.svg';
