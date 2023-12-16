@@ -1,0 +1,10 @@
+// ! ESLINT Plugin React Hooks
+// https://www.npmjs.com/package/eslint-plugin-react-hooks
+// npm install eslint-plugin-react-hooks --save-dev
+// Ce plugin va servir comme rappel de règles conçernant les hooks de notre application
+// Objet qui inclut un tableau des plugins que l'ont va utiliser pour notre programme react
+{
+    "extends": [
+        "plugin:react-hooks/recommended"
+    ]
+}
