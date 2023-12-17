@@ -35,6 +35,8 @@ function reducer(state, action) {
         ...state,
         items: action.payload.option === "Completed" ? filtered : state.all,
       }
+    default:
+      throw new Error();
   }
 }
 
@@ -107,9 +109,6 @@ function App() {
 
   const [state, dispatch] = useReducer(reducer, initialState);
   const ref = useRef();
-
-  const [items, setItems] = useState([{ idI: 1, contentI: "pay bills", doneI: true }, { idI: 2, contentI: "learn React", doneI: false }]);
-  const [all, setAll] = useState(items);
 
   const handleOnChange = e => dispatch({ type: "change", payload: { value: e.target.value } });
   const handleOnSubmit = e => {
