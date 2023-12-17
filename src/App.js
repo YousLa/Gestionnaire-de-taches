@@ -1,6 +1,42 @@
-import { useState, useMemo, useRef, forwardRef } from "react";
+import { useState, useMemo, useRef, forwardRef, useReducer } from "react";
 import { v4 as uuid } from "uuid";
 import './App.css';
+
+const initialState = {
+  items: [{ idI: 1, contentI: "pay bills", doneI: true }, { idI: 2, contentI: "learn React", doneI: false }],
+  all: [{ idI: 1, contentI: "pay bills", doneI: true }, { idI: 2, contentI: "learn React", doneI: false }],
+  input: null
+}
+
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'submit':
+      return {
+        ...state,
+        items: [...state.items, action.payload.item],
+        all: [...state.items, action.payload.item]
+      }
+    case 'change':
+      return {
+        ...state,
+        input: action.payload.value
+      }
+    case 'check':
+      const updated = state.items.map(item => item.idI === action.payload.idH ? { ...item, doneI: action.payload.boolH } : item);
+      return {
+        ...state,
+        items: updated,
+        all: updated
+      }
+    case 'select':
+      const filtered = state.items.filter(item => item.doneI);
+      return {
+        ...state,
+        items: action.payload.option === "Completed" ? filtered : state.all,
+      }
+  }
+}
 
 const Container = ({ children, title }) => {
   return (
@@ -35,7 +71,7 @@ const Form = forwardRef(({ onChangeF, onSubmitF }, ref) => {
 })
 
 function Select({ onSelectS }) {
-  const options = ["All", "Completed", "Active", "Has due date"];
+  const options = ["All", "Completed"];
 
   const select = e => onSelectS(e.target.value);
   return (
@@ -69,41 +105,37 @@ function List({ itemsL, onCheckL }) {
 
 function App() {
 
+  const [state, dispatch] = useReducer(reducer, initialState);
   const ref = useRef();
-  const [input, setInput] = useState(null);
+
   const [items, setItems] = useState([{ idI: 1, contentI: "pay bills", doneI: true }, { idI: 2, contentI: "learn React", doneI: false }]);
   const [all, setAll] = useState(items);
 
-  const handleOnChange = e => setInput(e.target.value);
+  const handleOnChange = e => dispatch({ type: "change", payload: { value: e.target.value } });
   const handleOnSubmit = e => {
     e.preventDefault();
     if (isValid) {
-      setItems([{ idI: uuid(), contentI: input, doneI: false }, ...items]);
-      setAll([{ idI: uuid(), contentI: input, doneI: false }, ...items]);
-      setInput(null);
+      dispatch({ type: "submit", payload: { item: { idI: uuid(), contentI: state.input, doneI: false } } });
       ref.current.value = null;
     }
   }
 
   const handleOnCheck = (idH, boolH) => {
-    const updated = items.map(item => item.idI === idH ? { ...item, doneI: boolH } : item);
-    setItems(updated);
-    setAll(updated);
+    dispatch({ type: "check", payload: { idH, boolH } })
   }
 
   const handleOnSelect = option => {
-    const filtered = items.filter(item => item.doneI);
-    setItems(option === "Completed" ? filtered : all);
+    dispatch({ type: "select", payload: { option } })
   }
 
-  const isValid = useMemo(() => !!input, [input]);
+  const isValid = useMemo(() => !!state.input, [state.input]);
 
   return (
     <Container title="Gestionnaire de tâches">
 
       <Form ref={ref} onChangeF={handleOnChange} onSubmitF={handleOnSubmit} />
       <Select onSelectS={handleOnSelect} />
-      <List itemsL={items} onCheckL={handleOnCheck} />
+      <List itemsL={state.items} onCheckL={handleOnCheck} />
 
 
     </Container>);
