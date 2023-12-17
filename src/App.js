@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useRef, forwardRef } from "react";
 import { v4 as uuid } from "uuid";
 import './App.css';
 
@@ -18,11 +18,12 @@ const Container = ({ children, title }) => {
     </div>)
 }
 
-function Form({ onChangeF, onSubmitF }) {
+const Form = forwardRef(({ onChangeF, onSubmitF }, ref) => {
   return (
 
     <form className="input-group mb-3" onSubmit={onSubmitF}>
       <input
+        ref={ref}
         type="text"
         className="form-control form-control-lg mx-0"
         placeholder="Add new..."
@@ -31,7 +32,7 @@ function Form({ onChangeF, onSubmitF }) {
       <button type="submit" className="btn btn-info">Add</button>
     </form>
   )
-}
+})
 
 function Select() {
   return (
@@ -46,45 +47,54 @@ function Select() {
   )
 }
 
-function Item({ id, content, done }) {
+// fonction onCheck utilisé ici en prop onCheckI => error
+function Item({ idI, contentI, doneI, onCheck }) {
+  const toggleCheck = e => onCheck(idI, e.target.checked)
+  const isDone = doneI ? "mmx-3 item-done" : "mx-3";
   return (
     <li className="list-group-item">
-      <input className="form-check-input" type="checkbox" aria-label="..." checked={done} />
-      <span className="mx-3">{content}</span>
+      <input className="form-check-input" type="checkbox" aria-label="..." checked={doneI} onChange={toggleCheck} />
+      <span className={isDone}>{contentI}</span>
     </li>
   )
 }
 
-function List({ items }) {
+function List({ itemsL, onCheckL }) {
   return (
     <ul className="list-group">
-      {items.map(item => <Item {...item} />)}
+      {itemsL.map(item => <Item key={item.idI} {...item} onCheck={onCheckL} />)}
     </ul>
   )
 }
 
 function App() {
 
-
+  const ref = useRef();
   const [input, setInput] = useState(null);
-  const [items, setItems] = useState([{ id: 1, content: "pay bills", done: false }, { id: 2, content: "learn React", done: false }])
+  const [items, setItems] = useState([{ idI: 1, contentI: "pay bills", doneI: true }, { idI: 2, contentI: "learn React", doneI: false }]);
+  const [all, setAll] = useState(items);
 
   const handleOnChange = e => setInput(e.target.value);
   const handleOnSubmit = e => {
     e.preventDefault();
     if (!input) { return false }
-    setItems([{ id: uuid(), content: input, done: false }, ...items]);
-    setInput(null)
+    setItems([{ idI: uuid(), contentI: input, doneI: false }, ...items]);
+    setInput(null);
+    ref.current.value = null;
   }
 
-
+  const handleOnCheck = (idH, boolH) => {
+    const updated = items.map(item => item.idI === idH ? { ...item, doneI: boolH } : item);
+    setItems(updated);
+    setAll(updated);
+  }
 
   return (
     <Container title="Gestionnaire de tâches">
 
-      <Form onChangeF={handleOnChange} onSubmitF={handleOnSubmit} />
+      <Form ref={ref} onChangeF={handleOnChange} onSubmitF={handleOnSubmit} />
       <Select />
-      <List items={items} />
+      <List itemsL={items} onCheckL={handleOnCheck} />
 
 
     </Container>);
