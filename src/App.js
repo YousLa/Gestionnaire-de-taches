@@ -34,14 +34,14 @@ const Form = forwardRef(({ onChangeF, onSubmitF }, ref) => {
   )
 })
 
-function Select() {
+function Select({ onSelectS }) {
+  const options = ["All", "Completed", "Active", "Has due date"];
+
+  const select = e => onSelectS(e.target.value);
   return (
     <div className="d-flex justify-content-end align-items-center my-3 ">
-      <select className="select form-select form-control form-control-sm">
-        <option value="1">All</option>
-        <option value="2">Completed</option>
-        <option value="3">Active</option>
-        <option value="4">Has due date</option>
+      <select onChange={select} className="select form-select form-control form-control-sm">
+        {options.map(option => <option value={option}>{option}</option>)}
       </select>
     </div>
   )
@@ -77,10 +77,12 @@ function App() {
   const handleOnChange = e => setInput(e.target.value);
   const handleOnSubmit = e => {
     e.preventDefault();
-    if (!input) { return false }
-    setItems([{ idI: uuid(), contentI: input, doneI: false }, ...items]);
-    setInput(null);
-    ref.current.value = null;
+    if (isValid) {
+      setItems([{ idI: uuid(), contentI: input, doneI: false }, ...items]);
+      setAll([{ idI: uuid(), contentI: input, doneI: false }, ...items]);
+      setInput(null);
+      ref.current.value = null;
+    }
   }
 
   const handleOnCheck = (idH, boolH) => {
@@ -89,11 +91,18 @@ function App() {
     setAll(updated);
   }
 
+  const handleOnSelect = option => {
+    const filtered = items.filter(item => item.doneI);
+    setItems(option === "Completed" ? filtered : all);
+  }
+
+  const isValid = useMemo(() => !!input, [input]);
+
   return (
     <Container title="Gestionnaire de tâches">
 
       <Form ref={ref} onChangeF={handleOnChange} onSubmitF={handleOnSubmit} />
-      <Select />
+      <Select onSelectS={handleOnSelect} />
       <List itemsL={items} onCheckL={handleOnCheck} />
 
 
