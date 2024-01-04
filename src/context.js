@@ -12,9 +12,9 @@ const todos = [
 const initialState = {
     // * Items : est un tableau qui contient des objets représentant des tâches. 
     // * Propriétés :
-    // * idI : un identifiant unique associé à la tâche
-    // * contentI : Le contenu de la tâche
-    // * doneI : Un indicateur indiquant si la tâches est terminée => true | ou non => false
+    // * id : un identifiant unique associé à la tâche
+    // * content : Le contenu de la tâche
+    // * done : Un indicateur indiquant si la tâches est terminée => true | ou non => false
     items: todos,
     // * All : est également un tableau de tâches conenant toutes les tâches
     all: todos,
@@ -50,15 +50,15 @@ function reducer(state, action) {
         // * Elle renvoie un nouvel état de la liste => items.
         case 'check':
             // * l'id de la tâche est mise à jour avec la valeur (action.payload.idH)
-            // * la propriété => doneI est mise à jour avec la valeur booléenne (action)
-            const updated = state.items.map(item => item.idI === action.payload.idH ? { ...item, doneI: action.payload.boolH } : item);
+            // * la propriété => done est mise à jour avec la valeur booléenne (action)
+            const updated = state.items.map(item => item.id === action.payload.id ? { ...item, done: action.payload.bool } : item);
             return {
                 ...state,
                 items: updated,
                 all: updated
             }
         case 'select':
-            const filtered = state.items.filter(item => item.doneI);
+            const filtered = state.items.filter(item => item.done);
             return {
                 ...state,
                 items: action.payload.option === "Completed" ? filtered : state.all,
