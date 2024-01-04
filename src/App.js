@@ -1,45 +1,17 @@
-import { useState, useMemo, useRef, forwardRef, useReducer } from "react";
+// ^ useState : Hook pour gérer les états dans le composants fonctionnels.
+// ^ usemMemo : Hook pour mémoriser la valeur calculée entre les rendus.
+// ^ useRef : Hook pour créer une référence mutable qui persiste à travers les rendus.
+// ^ forwardRed : Fonction pour transférer les références aux composants enfants.
+// ^ useReducer : Hook pour gérer les états avec des actions et un reducer.
+// ^uuid : Bibliothèque pour générer des identifiants uniques.
+import { useMemo, useRef, forwardRef } from "react";
+import { useAppContext } from './context';
 import { v4 as uuid } from "uuid";
 import './App.css';
 
-const initialState = {
-  items: [{ idI: 1, contentI: "pay bills", doneI: true }, { idI: 2, contentI: "learn React", doneI: false }],
-  all: [{ idI: 1, contentI: "pay bills", doneI: true }, { idI: 2, contentI: "learn React", doneI: false }],
-  input: null
-}
 
 
-function reducer(state, action) {
-  switch (action.type) {
-    case 'submit':
-      return {
-        ...state,
-        items: [...state.items, action.payload.item],
-        all: [...state.items, action.payload.item]
-      }
-    case 'change':
-      return {
-        ...state,
-        input: action.payload.value
-      }
-    case 'check':
-      const updated = state.items.map(item => item.idI === action.payload.idH ? { ...item, doneI: action.payload.boolH } : item);
-      return {
-        ...state,
-        items: updated,
-        all: updated
-      }
-    case 'select':
-      const filtered = state.items.filter(item => item.doneI);
-      return {
-        ...state,
-        items: action.payload.option === "Completed" ? filtered : state.all,
-      }
-    default:
-      throw new Error();
-  }
-}
-
+// ^ Composant fonctionnel => Container | qui représente un conteneur stylisé avec des props => {title} & {children}
 const Container = ({ children, title }) => {
   return (
     <div className="container py-3">
@@ -56,60 +28,12 @@ const Container = ({ children, title }) => {
     </div>)
 }
 
-const Form = forwardRef(({ onChangeF, onSubmitF }, ref) => {
-  return (
 
-    <form className="input-group mb-3" onSubmit={onSubmitF}>
-      <input
-        ref={ref}
-        type="text"
-        className="form-control form-control-lg mx-0"
-        placeholder="Add new..."
-        style={{ height: "max-content" }}
-        onChange={onChangeF} />
-      <button type="submit" className="btn btn-info">Add</button>
-    </form>
-  )
-})
 
-function Select({ onSelectS }) {
-  const options = ["All", "Completed"];
-
-  const select = e => onSelectS(e.target.value);
-  return (
-    <div className="d-flex justify-content-end align-items-center my-3 ">
-      <select onChange={select} className="select form-select form-control form-control-sm">
-        {options.map(option => <option value={option}>{option}</option>)}
-      </select>
-    </div>
-  )
-}
-
-// fonction onCheck utilisé ici en prop onCheckI => error
-function Item({ idI, contentI, doneI, onCheck }) {
-  const toggleCheck = e => onCheck(idI, e.target.checked)
-  const isDone = doneI ? "mmx-3 item-done" : "mx-3";
-  return (
-    <li className="list-group-item">
-      <input className="form-check-input" type="checkbox" aria-label="..." checked={doneI} onChange={toggleCheck} />
-      <span className={isDone}>{contentI}</span>
-    </li>
-  )
-}
-
-function List({ itemsL, onCheckL }) {
-  return (
-    <ul className="list-group">
-      {itemsL.map(item => <Item key={item.idI} {...item} onCheck={onCheckL} />)}
-    </ul>
-  )
-}
-
-function App() {
-
-  const [state, dispatch] = useReducer(reducer, initialState);
+// ^ Composant fonctionnel => Form | avec un formulaire pour ajouter de nouvelles tâches.
+const Form = () => {
   const ref = useRef();
-
+  const { state, dispatch } = useAppContext()
   const handleOnChange = e => dispatch({ type: "change", payload: { value: e.target.value } });
   const handleOnSubmit = e => {
     e.preventDefault();
@@ -118,25 +42,74 @@ function App() {
       ref.current.value = null;
     }
   }
-
-  const handleOnCheck = (idH, boolH) => {
-    dispatch({ type: "check", payload: { idH, boolH } })
-  }
-
-  const handleOnSelect = option => {
-    dispatch({ type: "select", payload: { option } })
-  }
-
   const isValid = useMemo(() => !!state.input, [state.input]);
+  return (
+
+    <form className="input-group mb-3" onSubmit={handleOnSubmit}>
+      <input
+        ref={ref}
+        type="text"
+        className="form-control form-control-lg mx-0"
+        placeholder="Add new..."
+        style={{ height: "max-content" }}
+        onChange={handleOnChange} />
+      <button type="submit" className="btn btn-info">Add</button>
+    </form>
+  )
+}
+
+// ^ Composant fonctionnel => Select | pour sélectionner dans le menu déroulant "All" et "Completed"
+function Select() {
+  const options = ["All", "Completed"];
+  const { dispatch } = useAppContext();
+  const handleOnSelect = e => {
+    dispatch({ type: "select", payload: { option: e.target.value } })
+  }
+  return (
+    <div className="d-flex justify-content-end align-items-center my-3 ">
+      <select onChange={handleOnSelect} className="select form-select form-control form-control-sm">
+        {options.map(option => <option key={option} value={option}>{option}</option>)}
+      </select>
+    </div>
+  )
+}
+
+// ^ Composant fonctionnel => Item | pour représenter une tâche dans la liste avec une case à cocher.
+// fonction onCheck utilisé ici en prop onCheckI => error
+function Item({ idI, contentI, doneI }) {
+  const { dispatch } = useAppContext();
+
+  const handleOnCheck = e => {
+    dispatch({ type: "check", payload: { idI, boolH: e.target.checked } })
+  }
+
+  const isDone = doneI ? "mmx-3 item-done" : "mx-3";
+  return (
+    <li className="list-group-item">
+      <input className="form-check-input" type="checkbox" aria-label="..." checked={doneI} onChange={handleOnCheck} />
+      <span className={isDone}>{contentI}</span>
+    </li>
+  )
+}
+
+// ^ Composant fonctionnel => List | pour représenter la liste complète de tâches
+function List({ }) {
+  const { state } = useAppContext();
 
   return (
+    <ul className="list-group">
+      {state.items.map(item => <Item key={item.id} {...item} />)}
+    </ul>
+  )
+}
+
+// ^ Composant principal => App | 
+function App({ }) {
+  return (
     <Container title="Gestionnaire de tâches">
-
-      <Form ref={ref} onChangeF={handleOnChange} onSubmitF={handleOnSubmit} />
-      <Select onSelectS={handleOnSelect} />
-      <List itemsL={state.items} onCheckL={handleOnCheck} />
-
-
+      <Form />
+      <Select />
+      <List />
     </Container>);
 }
 
