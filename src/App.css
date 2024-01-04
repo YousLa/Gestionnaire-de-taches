@@ -28,6 +28,9 @@
   width: auto;
 }
 
+.card-body {
+  min-height: 80vh;
+}
 
 .form-check-input:checked {
   background-color: #3dd5f3;

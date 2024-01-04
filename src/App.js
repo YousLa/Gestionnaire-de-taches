@@ -1,20 +1,13 @@
-// ^ useState : Hook pour gérer les états dans le composants fonctionnels.
-// ^ usemMemo : Hook pour mémoriser la valeur calculée entre les rendus.
-// ^ useRef : Hook pour créer une référence mutable qui persiste à travers les rendus.
-// ^ forwardRed : Fonction pour transférer les références aux composants enfants.
-// ^ useReducer : Hook pour gérer les états avec des actions et un reducer.
-// ^uuid : Bibliothèque pour générer des identifiants uniques.
+// * Ces lignes importent les composants nécessaires depuis les fichiers correspondants et une feuille de style.
 import Select from "./components/Select";
 import Form from "./components/Form";
 import List from "./components/List";
 import './App.css';
 
-
-
 // ^ Composant fonctionnel => Container | qui représente un conteneur stylisé avec des props => {title} & {children}
 const Container = ({ children, title }) => {
   return (
-    <div className="container py-3">
+    <div className="container py-md-5 py-3">
       <div className="row d-flex justify-content-center align-items-center h-100">
         <div className="col">
           <div className="card" id="list1" style={{ borderRadius: ".15rem" }}>
@@ -29,7 +22,7 @@ const Container = ({ children, title }) => {
 }
 
 
-// ^ Composant principal => App | 
+// ^ Composant principal de l'application => App | il utilise le composant => Container | avec à l'intérieur les composants Form | Select | List
 function App({ }) {
   return (
     <Container title="Gestionnaire de tâches">
